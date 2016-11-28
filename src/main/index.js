@@ -54,5 +54,5 @@ class Main extends LoopElement {
 }
 
 Loader.onLoad.then(() => {
-  window.customElements.define("dnit-main", Main);
+  window.customElements.define("christmasxp-fireworks", Main);
 });

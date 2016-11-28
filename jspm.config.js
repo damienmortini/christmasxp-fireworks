@@ -2,7 +2,7 @@ SystemJS.config({
   paths: {
     "npm:": "jspm_packages/npm/",
     "github:": "jspm_packages/github/",
-    "dnit/": "src/"
+    "christmasxp-fireworks/": "src/"
   },
   devConfig: {
     "map": {
@@ -18,7 +18,7 @@ SystemJS.config({
     }
   },
   packages: {
-    "dnit": {
+    "christmasxp-fireworks": {
       "main": "src/index.js",
       "meta": {
         "*.js": {

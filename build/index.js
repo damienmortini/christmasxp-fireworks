@@ -9661,7 +9661,7 @@ System.register("npm:dlib@0.0.16/three/THREETrackballController.js", ["three/src
     }
   };
 });
-System.register("dnit/main/Scene.js", ["three", "dlib/three/THREETrackballController.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THREETrackballController.js"], function (_export, _context) {
   "use strict";
 
   var PerspectiveCamera, Mesh, BoxGeometry, MeshNormalMaterial, THREEScene, THREETrackballController;
@@ -53012,7 +53012,7 @@ System.register("npm:dlib@0.0.16/webgl/shaders/AntialiasGLSL.js", [], function (
     }
   };
 });
-System.register("dnit/main/Renderer.js", ["three", "three/examples/js/postprocessing/EffectComposer.js", "three/examples/js/postprocessing/ShaderPass.js", "three/examples/js/postprocessing/MaskPass.js", "three/examples/js/postprocessing/RenderPass.js", "three/examples/js/shaders/CopyShader.js", "dlib/three/THREEShader.js", "dlib/webgl/shaders/AntialiasGLSL.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/main/Renderer.js", ["three", "three/examples/js/postprocessing/EffectComposer.js", "three/examples/js/postprocessing/ShaderPass.js", "three/examples/js/postprocessing/MaskPass.js", "three/examples/js/postprocessing/RenderPass.js", "three/examples/js/shaders/CopyShader.js", "dlib/three/THREEShader.js", "dlib/webgl/shaders/AntialiasGLSL.js"], function (_export, _context) {
   "use strict";
 
   var WebGLRenderer, THREEShader, AntialiasGLSL;
@@ -53082,7 +53082,7 @@ System.register("dnit/main/Renderer.js", ["three", "three/examples/js/postproces
     }
   };
 });
-System.register("dnit/main/index.js", ["@webcomponents/custom-elements", "three", "dlib/customelements/LoopElement.js", "dlib/utils/Loader.js", "./Scene.js", "./Renderer.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/main/index.js", ["@webcomponents/custom-elements", "three", "dlib/customelements/LoopElement.js", "dlib/utils/Loader.js", "./Scene.js", "./Renderer.js"], function (_export, _context) {
   "use strict";
 
   var LoopElement, Loader, Scene, Renderer;
@@ -53144,12 +53144,12 @@ System.register("dnit/main/index.js", ["@webcomponents/custom-elements", "three"
       }
 
       Loader.onLoad.then(() => {
-        window.customElements.define("dnit-main", Main);
+        window.customElements.define("christmasxp-fireworks", Main);
       });
     }
   };
 });
-System.register("dnit/index.js", ["./main/index.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/index.js", ["./main/index.js"], function (_export, _context) {
   "use strict";
 
   return {
