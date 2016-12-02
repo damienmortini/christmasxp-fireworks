@@ -16,6 +16,7 @@ export default class Renderer {
     this.renderer = new WebGLRenderer({
       canvas: canvas
     });
+    this.renderer.setClearColor("#0d101e");
 
     this.effectComposer = new THREE.EffectComposer(this.renderer);
     this.renderPass = new THREE.RenderPass();
