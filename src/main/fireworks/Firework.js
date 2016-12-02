@@ -14,7 +14,7 @@ import {
 import THREEExtendedShaderMaterial from "dlib/three/THREEExtendedShaderMaterial.js";
 import Particle from "dlib/physics/Particle.js";
 
-const PARTICLES_NUMBER = 10000;
+const PARTICLES_NUMBER = 1000;
 
 let TEXTURE;
 
@@ -73,7 +73,7 @@ export default class Firework extends Object3D {
       depthWrite: false,
       uniforms: {
         diffuse: new Color(color),
-        size: 20,
+        size: 25,
         opacity: 1,
         map: TEXTURE
       },
@@ -155,7 +155,7 @@ export default class Firework extends Object3D {
   launch() {
     this.points.material.explosion = 0;
     this.particle.set(0, 0 ,0);
-    this.particle.velocity.set((Math.random() - .5) * .05, .07 + Math.random() * .04, (Math.random() - .5) * .05);
+    this.particle.velocity.set((Math.random() - .5) * .05, .07 + Math.random() * .03, (Math.random() - .5) * .05);
     this.particle.dead = false;
   }
 
@@ -181,7 +181,7 @@ export default class Firework extends Object3D {
     this.points.material.head.copy(this.particle);
 
     if(!this.points.material.explosion) {
-      this.points.material.tail.lerp(this.particle, .05);
+      this.points.material.tail.lerp(this.particle, (1. - this.particle.velocity.y / .1) * .2);
     } else {
       this.points.material.tail.y += (this.particle.y - this.points.material.tail.y) * .01;
     }

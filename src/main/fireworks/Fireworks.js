@@ -22,7 +22,7 @@ export default class Fireworks extends Object3D {
 
     this.fireworks = [];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 100; i++) {
       let firework = new Firework({
         color: COLORS[i % COLORS.length]
       });
@@ -46,7 +46,7 @@ export default class Fireworks extends Object3D {
       setTimeout(() => {
         firework.reset();
         firework.launch();
-      }, 1000 + 1000 * Math.random());
+      }, 1000 + 3000 * Math.random());
     }
   }
 
