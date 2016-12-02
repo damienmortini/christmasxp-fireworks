@@ -8,17 +8,25 @@ import {
 
 import THREETrackballController from "dlib/three/THREETrackballController.js";
 
+import Fireworks from "./fireworks/Fireworks.js";
+
 export default class Scene extends THREEScene {
-  constructor() {
+  constructor({canvas}) {
     super();
 
     this.camera = new PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 10000);
 
-    this.controls = new THREETrackballController(this.camera, {distance: 5});
+    this.controls = new THREETrackballController(this.camera, {
+      distance: 5,
+      domElement: canvas
+    });
 
-    let cube = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial());
+    let fireworks = new Fireworks();
+    this.add(fireworks);
 
-    this.add(cube);
+    canvas.addEventListener("click", () => {
+      fireworks.reset();
+    });
   }
 
   resize(width, height) {

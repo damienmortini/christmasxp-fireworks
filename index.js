@@ -13,6 +13,7 @@
     UniformsUtils: module.UniformsUtils,
     OrthographicCamera: module.OrthographicCamera,
     Scene: module.Scene,
+    Vector2: module.Vector2,
     PlaneBufferGeometry: module.PlaneBufferGeometry,
     Mesh: module.Mesh,
   };

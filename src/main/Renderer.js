@@ -5,6 +5,8 @@ import "three/examples/js/postprocessing/ShaderPass.js";
 import "three/examples/js/postprocessing/MaskPass.js";
 import "three/examples/js/postprocessing/RenderPass.js";
 import "three/examples/js/shaders/CopyShader.js";
+import "three/examples/js/postprocessing/BloomPass.js";
+import "three/examples/js/shaders/ConvolutionShader.js";
 
 import THREEShader from "dlib/three/THREEShader.js";
 import AntialiasGLSL from "dlib/webgl/shaders/AntialiasGLSL.js";
@@ -18,6 +20,8 @@ export default class Renderer {
     this.effectComposer = new THREE.EffectComposer(this.renderer);
     this.renderPass = new THREE.RenderPass();
     this.effectComposer.addPass(this.renderPass);
+    // this.bloomPass = new THREE.BloomPass(8, 10, 1, 1);
+    // this.effectComposer.addPass(this.bloomPass);
     this.fxaaShaderPass = new THREE.ShaderPass(new THREEShader({
       vertexShader: `
         uniform vec2 resolution;
@@ -51,6 +55,8 @@ export default class Renderer {
     height *= window.devicePixelRatio;
     this.renderer.setSize(width, height, false);
     this.fxaaShaderPass.uniforms.resolution.value.set(width, height);
+    // this.bloomPass.renderTargetX.setSize(width, height);
+    // this.bloomPass.renderTargetY.setSize(width, height);
     this.effectComposer.setSize(width, height);
   }
 
