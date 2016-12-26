@@ -15,8 +15,7 @@ export default class Renderer {
   constructor(canvas) {
     this.renderer = new WebGLRenderer({
       canvas,
-      alpha: true,
-      premultipliedAlpha: false
+      alpha: true
     });
     // this.renderer.setClearColor("#0d101e", 0);
     //

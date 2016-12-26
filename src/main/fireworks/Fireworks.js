@@ -46,7 +46,7 @@ export default class Fireworks extends Object3D {
       setTimeout(() => {
         firework.reset();
         firework.launch();
-      }, 1000 + 3000 * Math.random());
+      }, 1000 + 10000 * Math.random());
     }
   }
 
