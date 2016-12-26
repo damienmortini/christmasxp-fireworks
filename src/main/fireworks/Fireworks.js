@@ -22,7 +22,7 @@ export default class Fireworks extends Object3D {
 
     this.fireworks = [];
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 50; i++) {
       let firework = new Firework({
         color: COLORS[i % COLORS.length]
       });
