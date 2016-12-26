@@ -159,7 +159,7 @@ export default class Firework extends Object3D {
 
   explode() {
     this.points.material.explosion = 1;
-    this.particle.velocity.set((Math.random() - .5) * .2, 0, (Math.random() - .5) * .2);
+    this.particle.velocity.set(0, 0, .05 + Math.random() * .1);
     this.particle.dead = false;
   }
 
