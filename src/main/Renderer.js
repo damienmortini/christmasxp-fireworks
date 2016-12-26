@@ -9,7 +9,7 @@ import "three/examples/js/postprocessing/BloomPass.js";
 import "three/examples/js/shaders/ConvolutionShader.js";
 
 import THREEShader from "dlib/three/THREEShader.js";
-import AntialiasGLSL from "dlib/webgl/shaders/AntialiasGLSL.js";
+import AntialiasGLSL from "dlib/shaders/AntialiasGLSL.js";
 
 export default class Renderer {
   constructor(canvas) {
@@ -21,8 +21,6 @@ export default class Renderer {
     this.effectComposer = new THREE.EffectComposer(this.renderer);
     this.renderPass = new THREE.RenderPass();
     this.effectComposer.addPass(this.renderPass);
-    // this.bloomPass = new THREE.BloomPass(8, 10, 1, 1);
-    // this.effectComposer.addPass(this.bloomPass);
     this.fxaaShaderPass = new THREE.ShaderPass(new THREEShader({
       vertexShader: `
         uniform vec2 resolution;
