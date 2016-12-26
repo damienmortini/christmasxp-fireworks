@@ -12,7 +12,15 @@
   },
   "author": "Damien Mortini",
   "license": "MIT",
+  "dependencies": {
+    "@webcomponents/custom-elements": "^1.0.0-alpha.3",
+    "dlib": "0.0.18",
+    "three": "^0.82.1"
+  },
   "devDependencies": {
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-0": "^6.16.0",
     "browser-sync": "^2.18.1",
     "jspm": "^0.17.0-beta.32"
   },
