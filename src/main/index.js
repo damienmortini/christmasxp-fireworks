@@ -12,9 +12,6 @@ class Main extends LoopElement {
   constructor() {
     super();
 
-    this.style.display = "block";
-    this.style.position = "relative";
-
     this.innerHTML = "<canvas></canvas>";
 
     this.canvas = this.querySelector("canvas");
