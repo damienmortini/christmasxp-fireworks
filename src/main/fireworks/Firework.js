@@ -29,8 +29,6 @@ let TEXTURE;
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
 
-  document.body.appendChild(canvas);
-
   TEXTURE = new Texture(canvas);
   TEXTURE.needsUpdate = true;
 })();
