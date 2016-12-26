@@ -8,19 +8,18 @@ import Loader from "dlib/utils/Loader.js";
 import Scene from "./Scene.js";
 import Renderer from "./Renderer.js";
 
-let template = document.createElement("template");
-Loader.load("src/main/template.html").then((value) => {
-  template.innerHTML = value;
-});
-
 class Main extends LoopElement {
   constructor() {
     super();
 
-    let templateClone = document.importNode(template.content, true);
-    this.appendChild(templateClone);
+    this.style.display = "block";
+    this.style.position = "relative";
+
+    this.innerHTML = "<canvas></canvas>";
 
     this.canvas = this.querySelector("canvas");
+    this.canvas.style.width = "100%";
+    this.canvas.style.height = "100%";
 
     this.renderer = new Renderer(this.canvas);
 
