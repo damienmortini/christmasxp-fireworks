@@ -10,7 +10,9 @@ import Renderer from "./Renderer.js";
 
 class Main extends LoopElement {
   constructor() {
-    super();
+    super({
+      background: true
+    });
 
     this.innerHTML = "<canvas></canvas>";
 
