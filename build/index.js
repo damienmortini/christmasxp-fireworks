@@ -2690,7 +2690,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
 
         update() {
           if (!this.particle.dead) {
-            this.particle.velocity.y -= this.points.material.explosion ? .0005 : .001;
+            this.particle.velocity.y -= this.points.material.explosion ? .01 : .001;
           }
           this.particle.update();
 

@@ -165,7 +165,7 @@ export default class Firework extends Object3D {
 
   update() {
     if(!this.particle.dead) {
-      this.particle.velocity.y -= this.points.material.explosion ? .0005 : .001;
+      this.particle.velocity.y -= this.points.material.explosion ? .01 : .001;
     }
     this.particle.update();
 
