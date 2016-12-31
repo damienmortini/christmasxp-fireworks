@@ -158,7 +158,7 @@ System.registerDynamic("npm:@webcomponents/custom-elements@1.0.0-alpha.3/custom-
 
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/customelements/LoopElement.js", ["@webcomponents/custom-elements", "../utils/Ticker.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/customelements/LoopElement.js", ["@webcomponents/custom-elements", "../utils/Ticker.js"], function (_export, _context) {
   "use strict";
 
   var Ticker;
@@ -191,18 +191,21 @@ System.register("npm:dlib@0.0.16/customelements/LoopElement.js", ["@webcomponent
         }
 
         play() {
-          this.pause();
-          this._tickerID = Ticker.add(this.update.bind(this));
+          Ticker.add(this._updateBinded = this._updateBinded || this.update.bind(this));
+          this.dispatchEvent(new Event("playing"));
         }
 
         pause() {
-          Ticker.remove(this._tickerID);
+          Ticker.delete(this._updateBinded);
+          this.dispatchEvent(new Event("pause"));
         }
 
         update() {}
       }
 
       _export("default", LoopElement);
+
+      window.customElements.define("dlib-loop", LoopElement);
     }
   };
 });
@@ -685,7 +688,7 @@ System.registerDynamic('npm:whatwg-fetch@1.1.1/fetch.js', [], true, function ($_
   })(typeof self !== 'undefined' ? self : this);
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/utils/Loader.js", ["whatwg-fetch"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/utils/Loader.js", ["whatwg-fetch"], function (_export, _context) {
   "use strict";
 
   return {
@@ -783,7 +786,11 @@ System.register("npm:dlib@0.0.16/utils/Loader.js", ["whatwg-fetch"], function (_
                 if (element instanceof HTMLMediaElement) {
                   element.play();
                   if (!element.autoplay) {
-                    element.pause();
+                    let pauseElement = function () {
+                      element.pause();
+                      element.removeEventListener("playing", pauseElement);
+                    };
+                    element.addEventListener("playing", pauseElement);
                   }
                 }
               }
@@ -1835,188 +1842,17 @@ System.register('npm:three@0.82.1/src/core/Object3D.js', ['../math/Quaternion', 
 		}
 	};
 });
-System.registerDynamic("npm:min-signal@0.0.6.json", [], false, function() {
-  return {
-    "main": "min-signal.js",
-    "format": "cjs",
-    "meta": {
-      "*.json": {
-        "format": "json"
-      }
-    }
-  };
-});
-
-System.registerDynamic('npm:min-signal@0.0.6/min-signal.js', [], true, function ($__require, exports, module) {
-    var define,
-        global = this || self,
-        GLOBAL = global;
-    var MinSignal = function (undef) {
-
-        function MinSignal() {
-            this._listeners = [];
-            this.dispatchCount = 0;
-        }
-
-        var _p = MinSignal.prototype;
-
-        _p.add = add;
-        _p.addOnce = addOnce;
-        _p.remove = remove;
-        _p.dispatch = dispatch;
-
-        var ERROR_MESSAGE_MISSING_CALLBACK = 'Callback function is missing!';
-
-        var _slice = Array.prototype.slice;
-
-        function _sort(list) {
-            list.sort(function (a, b) {
-                a = a.p;
-                b = b.p;
-                return b < a ? 1 : a > b ? -1 : 0;
-            });
-        }
-
-        /**
-         * Adding callback to the signal
-         * @param {Function} the callback function
-         * @param {object} the context of the callback function
-         * @param {number} priority in the dispatch call. The higher priority it is, the eariler it will be dispatched.
-         * @param {any...} additional argument prefix
-         */
-        function add(fn, context, priority, args) {
-
-            if (!fn) {
-                throw ERROR_MESSAGE_MISSING_CALLBACK;
-            }
-
-            priority = priority || 0;
-            var listeners = this._listeners;
-            var listener, realFn, sliceIndex;
-            var i = listeners.length;
-            while (i--) {
-                listener = listeners[i];
-                if (listener.f === fn && listener.c === context) {
-                    return false;
-                }
-            }
-            if (typeof priority === 'function') {
-                realFn = priority;
-                priority = args;
-                sliceIndex = 4;
-            }
-            listeners.unshift({ f: fn, c: context, p: priority, r: realFn || fn, a: _slice.call(arguments, sliceIndex || 3), j: 0 });
-            _sort(listeners);
-        }
-
-        /**
-         * Adding callback to the signal but it will only trigger once
-         * @param {Function} the callback function
-         * @param {object} the context of the callback function
-         * @param {number} priority in the dispatch call. The higher priority it is, the eariler it will be dispatched.
-         * @param {any...} additional argument prefix
-         */
-        function addOnce(fn, context, priority, args) {
-
-            if (!fn) {
-                throw ERROR_MESSAGE_MISSING_CALLBACK;
-            }
-
-            var self = this;
-            var realFn = function () {
-                self.remove.call(self, fn, context);
-                return fn.apply(context, _slice.call(arguments, 0));
-            };
-            args = _slice.call(arguments, 0);
-            if (args.length === 1) {
-                args.push(undef);
-            }
-            args.splice(2, 0, realFn);
-            add.apply(self, args);
-        }
-
-        /**
-         * Remove callback from the signal
-         * @param {Function} the callback function
-         * @param {object} the context of the callback function
-         * @return {boolean} return true if there is any callback was removed
-         */
-        function remove(fn, context) {
-            if (!fn) {
-                this._listeners.length = 0;
-                return true;
-            }
-            var listeners = this._listeners;
-            var listener;
-            var i = listeners.length;
-            while (i--) {
-                listener = listeners[i];
-                if (listener.f === fn && (!context || listener.c === context)) {
-                    listener.j = 0;
-                    listeners.splice(i, 1);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Dispatch the callback
-         * @param {any...} additional argument suffix
-         */
-        function dispatch(args) {
-            args = _slice.call(arguments, 0);
-            this.dispatchCount++;
-            var dispatchCount = this.dispatchCount;
-            var listeners = this._listeners;
-            var listener, context, stoppedListener;
-            var i = listeners.length;
-            while (i--) {
-                listener = listeners[i];
-                if (listener && listener.j < dispatchCount) {
-                    listener.j = dispatchCount;
-                    if (listener.r.apply(listener.c, listener.a.concat(args)) === false) {
-                        stoppedListener = listener;
-                        break;
-                    }
-                }
-            }
-            listeners = this._listeners;
-            i = listeners.length;
-            while (i--) {
-                listeners[i].j = 0;
-            }
-            return stoppedListener;
-        }
-
-        if (typeof module !== 'undefined') {
-            module.exports = MinSignal;
-        }
-    }();
-    return module.exports;
-});
-System.register("npm:dlib@0.0.16/utils/Signal.js", ["min-signal"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/input/Pointer.js", ["../math/Vector2.js", "../utils/Signal", "../utils/Ticker"], function (_export, _context) {
   "use strict";
 
-  var Signal;
-  return {
-    setters: [function (_minSignal) {
-      Signal = _minSignal.default;
-    }],
-    execute: function () {
-      _export("default", Signal);
-    }
-  };
-});
-System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../utils/Signal"], function (_export, _context) {
-  "use strict";
-
-  var Vector2, Signal;
+  var Vector2, Signal, Ticker;
   return {
     setters: [function (_mathVector2Js) {
       Vector2 = _mathVector2Js.default;
     }, function (_utilsSignal) {
       Signal = _utilsSignal.default;
+    }, function (_utilsTicker) {
+      Ticker = _utilsTicker.default;
     }],
     execute: function () {
 
@@ -2026,9 +1862,11 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
         static get TOUCH_TYPE() {
           return "touchtype";
         }
+
         static get MOUSE_TYPE() {
           return "mousetype";
         }
+
         static get(domElement) {
           let pointer = pointers.get(domElement);
           if (!pointer) {
@@ -2036,9 +1874,11 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           }
           return pointer;
         }
+
         get downed() {
           return this._downed;
         }
+
         constructor(domElement = document.body) {
           super();
 
@@ -2080,9 +1920,11 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this.resize();
           this.enable();
         }
+
         resize() {
           this._domElementBoundingRect = this.domElement.getBoundingClientRect();
         }
+
         _onPointerDown(e) {
           if (e.type === "touchstart") {
             this._preventMouseTypeChange = true;
@@ -2095,6 +1937,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this._updatePositions();
           this.onDown.dispatch(e);
         }
+
         _onPointerMove(e) {
           if (e.type === "mousemove") {
             if (this._preventMouseTypeChange) {
@@ -2106,6 +1949,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this._onPointerEvent(e);
           this.onMove.dispatch(e);
         }
+
         _onPointerUp(e) {
           this._downed = false;
           this._onPointerEvent(e);
@@ -2119,6 +1963,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
             this._preventMouseTypeChange = false;
           }, 2000);
         }
+
         _onPointerEvent(e) {
           if (!!window.TouchEvent && e instanceof window.TouchEvent) {
             if (e.type === "touchend") {
@@ -2130,6 +1975,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this._position.x = e.clientX - this._domElementBoundingRect.left;
           this._position.y = e.clientY - this._domElementBoundingRect.top;
         }
+
         _changeType(type) {
           if (this.type === type) {
             return;
@@ -2139,9 +1985,8 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this.enable();
           this.onTypeChange.dispatch(this.type);
         }
-        _update() {
-          this._requestAnimationFrameId = requestAnimationFrame(this._updateBinded);
 
+        _update() {
           if (this.x || this.y) {
             this.velocity.x = this._position.x - this.x;
             this.velocity.y = this._position.y - this.y;
@@ -2152,6 +1997,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
 
           this._updatePositions();
         }
+
         _updatePositions() {
           this.x = this._position.x;
           this.y = this._position.y;
@@ -2168,6 +2014,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this.normalizedCentered.y = this.normalizedCenteredFlippedY.y = this.normalized.y * 2 - 1;
           this.normalizedCenteredFlippedY.y *= -1;
         }
+
         enable() {
           this.disable();
           this.resize();
@@ -2181,10 +2028,11 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
           this.domElement.addEventListener("touchstart", this._onPointerDownBinded);
           this.domElement.addEventListener("mousemove", this._onPointerMoveBinded);
           window.addEventListener("resize", this._resizeBinded);
-          this._update();
+          Ticker.add(this._updateBinded = this._updateBinded || this._update.bind(this));
         }
+
         disable() {
-          cancelAnimationFrame(this._requestAnimationFrameId);
+          Ticker.delete(this._updateBinded);
           this.domElement.removeEventListener("touchstart", this._onPointerDownBinded);
           this.domElement.removeEventListener("mousedown", this._onPointerDownBinded);
           this.domElement.removeEventListener("touchmove", this._onPointerMoveBinded);
@@ -2199,7 +2047,7 @@ System.register("npm:dlib@0.0.16/input/Pointer.js", ["../math/Vector2.js", "../u
     }
   };
 });
-System.register("npm:dlib@0.0.16/math/Quaternion.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Quaternion.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var quat;
@@ -2301,7 +2149,7 @@ System.register("npm:dlib@0.0.16/math/Quaternion.js", ["gl-matrix"], function (_
     }
   };
 });
-System.register("npm:dlib@0.0.16/3d/controllers/TrackballController.js", ["../../input/Pointer", "../../utils/Ticker", "../../math/Matrix4", "../../math/Vector2", "../../math/Vector3", "../../math/Quaternion"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/3d/controllers/TrackballController.js", ["../../input/Pointer", "../../utils/Ticker", "../../math/Matrix4", "../../math/Vector2", "../../math/Vector3", "../../math/Quaternion"], function (_export, _context) {
   "use strict";
 
   var Pointer, Ticker, Matrix4, Vector2, Vector3, Quaternion;
@@ -2325,9 +2173,10 @@ System.register("npm:dlib@0.0.16/3d/controllers/TrackballController.js", ["../..
           domElement = document.body,
           distance = 0,
           invertRotation = true,
-          rotationEaseRatio = .03,
+          rotationEaseRatio = .04,
           zoomStep = 1,
-          zoomEaseRatio = .1
+          zoomEaseRatio = .1,
+          autoupdate = true
         } = {}) {
           this.matrix = matrix;
 
@@ -2354,8 +2203,6 @@ System.register("npm:dlib@0.0.16/3d/controllers/TrackballController.js", ["../..
           this._positionOffset = new Vector3();
 
           domElement.addEventListener("wheel", this.onWheel.bind(this));
-
-          Ticker.add(this.update.bind(this));
 
           this.update();
         }
@@ -2394,7 +2241,7 @@ System.register("npm:dlib@0.0.16/3d/controllers/TrackballController.js", ["../..
           this.matrix.z = 0;
 
           if (this._pointer.downed) {
-            this._velocity.copy(this._pointer.velocity).scale(.002);
+            this._velocity.copy(this._pointer.velocity).scale(.003);
           }
 
           this._velocity.lerp(this._velocityOrigin, this.rotationEaseRatio);
@@ -2422,7 +2269,7 @@ System.register("npm:dlib@0.0.16/3d/controllers/TrackballController.js", ["../..
     }
   };
 });
-System.register("npm:dlib@0.0.16/three/THREETrackballController.js", ["three/src/core/Object3D.js", "three/src/math/Matrix4.js", "../3d/controllers/TrackballController.js", "../math/Matrix4.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/three/THREETrackballController.js", ["three/src/core/Object3D.js", "three/src/math/Matrix4.js", "../3d/controllers/TrackballController.js", "../math/Matrix4.js"], function (_export, _context) {
   "use strict";
 
   var Object3D, THREEMatrix4, TrackballController, Matrix4;
@@ -2465,49 +2312,60 @@ System.register("npm:dlib@0.0.16/three/THREETrackballController.js", ["three/src
     }
   };
 });
-System.register("npm:dlib@0.0.16/utils/Ticker.js", [], function (_export, _context) {
+System.register("npm:dlib@0.0.18/utils/Signal.js", [], function (_export, _context) {
   "use strict";
 
   return {
     setters: [],
     execute: function () {
-      const callbacks = [];
-
-      class Ticker {
+      class Signal extends Set {
         constructor() {
+          super();
+        }
+
+        dispatch(value) {
+          for (let callback of this) {
+            callback(value);
+          }
+        }
+      }
+
+      _export("default", Signal);
+    }
+  };
+});
+System.register("npm:dlib@0.0.18/utils/Ticker.js", ["./Signal.js"], function (_export, _context) {
+  "use strict";
+
+  var Signal;
+  return {
+    setters: [function (_SignalJs) {
+      Signal = _SignalJs.default;
+    }],
+    execute: function () {
+
+      class Ticker extends Signal {
+        constructor() {
+          super();
+
           this._updateBinded = this.update.bind(this);
 
           this._previousTimestamp = 0;
           this.deltaTime = 0;
+          this.timeScale = 1;
 
           this.update();
         }
 
         update(time) {
-          this._requestAnimationFrameID = requestAnimationFrame(this._updateBinded);
+          requestAnimationFrame(this._updateBinded);
 
           let timestamp = window.performance ? window.performance.now() : Date.now();
-          this.deltaTime = timestamp - this._previousTimestamp;
+          this.deltaTime = (timestamp - this._previousTimestamp) * .001;
+          this.timeScale = this.deltaTime / .0166666667;
           this._previousTimestamp = timestamp;
 
-          for (let i = 0; i < callbacks.length; i++) {
-            callbacks[i]();
-          }
-        }
-
-        add(callback) {
-          this.remove(callbacks.indexOf(callback));
-
-          callbacks.push(callback);
-
-          return callbacks.length - 1;
-        }
-
-        remove(id = -1) {
-          if (id < 0) {
-            return;
-          }
-          callbacks.splice(id, 1);
+          this.dispatch(time);
         }
       }
 
@@ -2515,7 +2373,7 @@ System.register("npm:dlib@0.0.16/utils/Ticker.js", [], function (_export, _conte
     }
   };
 });
-System.register("npm:dlib@0.0.16/three/THREEExtendedShaderMaterial.js", ["three", "./THREEShader.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/three/THREEExtendedShaderMaterial.js", ["three", "./THREEShader.js"], function (_export, _context) {
   "use strict";
 
   var ShaderMaterial, ShaderLib, UniformsUtils, THREEShader;
@@ -2543,7 +2401,7 @@ System.register("npm:dlib@0.0.16/three/THREEExtendedShaderMaterial.js", ["three"
             vertexShader: ShaderLib[type].vertexShader,
             fragmentShader: ShaderLib[type].fragmentShader,
             uniforms: UniformsUtils.clone(ShaderLib[type].uniforms)
-          } : {});
+          } : undefined);
 
           super(Object.assign({
             fragmentShader: shader.fragmentShader,
@@ -2551,19 +2409,19 @@ System.register("npm:dlib@0.0.16/three/THREEExtendedShaderMaterial.js", ["three"
             uniforms: shader.uniforms
           }, options));
 
-          this.shader = shader;
+          this._shader = shader;
           this.add({ vertexShaderChunks, fragmentShaderChunks, uniforms });
 
           this.lights = /lambert|phong|standard/.test(type);
         }
 
         add({ vertexShaderChunks, fragmentShaderChunks, uniforms }) {
-          this.shader.add({ vertexShaderChunks, fragmentShaderChunks, uniforms });
+          this._shader.add({ vertexShaderChunks, fragmentShaderChunks, uniforms });
 
-          this.fragmentShader = this.shader.fragmentShader;
-          this.vertexShader = this.shader.vertexShader;
+          this.fragmentShader = this._shader.fragmentShader;
+          this.vertexShader = this._shader.vertexShader;
 
-          for (let key in this.shader.uniforms) {
+          for (let key in this._shader.uniforms) {
             Object.defineProperty(this, key, {
               configurable: true,
               get: function () {
@@ -2575,7 +2433,7 @@ System.register("npm:dlib@0.0.16/three/THREEExtendedShaderMaterial.js", ["three"
             });
           }
 
-          this.needsUpdate = true;
+          this.update();
         }
       }
 
@@ -2583,38 +2441,72 @@ System.register("npm:dlib@0.0.16/three/THREEExtendedShaderMaterial.js", ["three"
     }
   };
 });
-System.register("npm:dlib@0.0.16/physics/Particle.js", ["../math/Vector3.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/physics/Particle.js", ["../math/Vector2.js", "../math/Vector3.js"], function (_export, _context) {
   "use strict";
 
-  var Vector3;
+  var Vector2, Vector3;
   return {
-    setters: [function (_mathVector3Js) {
+    setters: [function (_mathVector2Js) {
+      Vector2 = _mathVector2Js.default;
+    }, function (_mathVector3Js) {
       Vector3 = _mathVector3Js.default;
     }],
     execute: function () {
-      class Particle extends Vector3 {
-        constructor({ x = 0, y = 0, z = 0, life = Infinity } = {}) {
-          super();
-          this.velocity = new Vector3();
-          this.reset({ x, y, z, life });
+      class Particle {
+        constructor({
+          position = new Vector3(),
+          velocity = position instanceof Vector2 ? new Vector2() : new Vector3(),
+          life = Infinity
+        } = {}) {
+          this.position = position;
+          this.velocity = velocity;
+          this.life = life;
+          this.reset();
           return this;
         }
 
-        set({ x = this.x, y = this.y, z = this.z, life = this.life } = {}) {
-          super.set(x, y, z);
+        get x() {
+          return this.position.x;
+        }
+
+        set x(value) {
+          this.position.x = value;
+        }
+
+        get y() {
+          return this.position.y;
+        }
+
+        set y(value) {
+          this.position.y = value;
+        }
+
+        get z() {
+          return this.position.z;
+        }
+
+        set z(value) {
+          this.position.z = value;
+        }
+
+        set({ position = this.position, life = this.life } = {}) {
+          this.position.copy(position);
           this.life = life;
           return this;
         }
 
-        reset({ x, y, z, life } = {}) {
-          this.set({ x, y, z, life });
+        reset({ position, life } = {}) {
+          this.set({
+            position,
+            life
+          });
           this.currentLife = this.life;
           this.dead = false;
           return this;
         }
 
         copy(particle) {
-          super.copy(particle);
+          this.position.copy(particle.position);
           this.velocity.copy(particle.velocity);
           this.life = particle.life;
           this.currentLife = particle.currentLife;
@@ -2625,7 +2517,7 @@ System.register("npm:dlib@0.0.16/physics/Particle.js", ["../math/Vector3.js"], f
           if (this.dead) {
             return this;
           }
-          this.add(this.velocity);
+          this.position.add(this.velocity);
           this.currentLife--;
           if (this.currentLife < 1) {
             this.dead = true;
@@ -2661,7 +2553,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
     }],
     execute: function () {
 
-      const PARTICLES_NUMBER = 1000;
+      const PARTICLES_NUMBER = 500;
 
       let TEXTURE;
 
@@ -2675,8 +2567,6 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
         gradient.addColorStop(.25, "rgba(255, 255, 255, 1)");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 64, 64);
-
-        document.body.appendChild(canvas);
 
         TEXTURE = new Texture(canvas);
         TEXTURE.needsUpdate = true;
@@ -2716,7 +2606,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
             depthWrite: false,
             uniforms: {
               diffuse: new Color(color),
-              size: 25,
+              size: 30,
               opacity: 1,
               map: TEXTURE
             },
@@ -2775,7 +2665,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
         reset() {
           this.points.material.explosion = 0;
           this.particle.dead = true;
-          this.particle.set({
+          this.particle.position.set({
             x: 0,
             y: 0,
             z: 0
@@ -2787,20 +2677,20 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
 
         launch() {
           this.points.material.explosion = 0;
-          this.particle.set(0, 0, 0);
+          this.particle.position.set(0, 0, 0);
           this.particle.velocity.set((Math.random() - .5) * .05, .07 + Math.random() * .03, (Math.random() - .5) * .05);
           this.particle.dead = false;
         }
 
         explode() {
           this.points.material.explosion = 1;
-          this.particle.velocity.set((Math.random() - .5) * .2, 0, (Math.random() - .5) * .2);
+          this.particle.velocity.set(0, 0, .05 + Math.random() * .1);
           this.particle.dead = false;
         }
 
         update() {
           if (!this.particle.dead) {
-            this.particle.velocity.y -= this.points.material.explosion ? .0001 : .001;
+            this.particle.velocity.y -= this.points.material.explosion ? .0005 : .001;
           }
           this.particle.update();
 
@@ -2849,7 +2739,7 @@ System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "
 
           this.fireworks = [];
 
-          for (let i = 0; i < 100; i++) {
+          for (let i = 0; i < 30; i++) {
             let firework = new Firework({
               color: COLORS[i % COLORS.length]
             });
@@ -2869,7 +2759,7 @@ System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "
             setTimeout(() => {
               firework.reset();
               firework.launch();
-            }, 1000 + 3000 * Math.random());
+            }, 3000 + 1000 * Math.random());
           }
         }
 
@@ -2915,9 +2805,9 @@ System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THR
           let fireworks = new Fireworks();
           this.add(fireworks);
 
-          canvas.addEventListener("click", () => {
-            fireworks.reset();
-          });
+          // canvas.addEventListener("click", () => {
+          //   fireworks.reset();
+          // });
         }
 
         resize(width, height) {
@@ -2926,7 +2816,7 @@ System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THR
         }
 
         update() {
-          this.controls.update();
+          // this.controls.update();
         }
       }
 
@@ -46068,7 +45958,7 @@ System.register('npm:three@0.82.1/src/textures/CubeTexture.js', ['./Texture', '.
 		}
 	};
 });
-System.register("npm:dlib@0.0.16/math/Vector2.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Vector2.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var vec2;
@@ -46181,7 +46071,7 @@ System.register("npm:dlib@0.0.16/math/Vector2.js", ["gl-matrix"], function (_exp
     }
   };
 });
-System.register("npm:dlib@0.0.16/math/Vector3.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Vector3.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var vec3;
@@ -46306,7 +46196,7 @@ System.register("npm:dlib@0.0.16/math/Vector3.js", ["gl-matrix"], function (_exp
     }
   };
 });
-System.register("npm:dlib@0.0.16/math/Vector4.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Vector4.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var vec4;
@@ -46364,7 +46254,7 @@ System.register("npm:dlib@0.0.16/math/Vector4.js", ["gl-matrix"], function (_exp
     }
   };
 });
-System.register("npm:dlib@0.0.16/math/Matrix3.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Matrix3.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var mat3;
@@ -53240,7 +53130,7 @@ System.registerDynamic("npm:gl-matrix@2.3.2/src/gl-matrix.js", ["./gl-matrix/com
   exports.vec4 = $__require("./gl-matrix/vec4.js");
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/math/Matrix4.js", ["gl-matrix"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/math/Matrix4.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
   var mat4;
@@ -53840,7 +53730,7 @@ System.registerDynamic('npm:gl-fbo@2.0.5/fbo.js', ['gl-texture2d'], true, functi
   }
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/webgl/Framebuffer.js", ["gl-fbo", "./Texture2D.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/webgl/Framebuffer.js", ["gl-fbo", "./Texture2D.js"], function (_export, _context) {
   "use strict";
 
   var createFBO, Texture2D;
@@ -57871,18 +57761,18 @@ System.registerDynamic('npm:buffer@4.9.1/index.js', ['base64-js', 'ieee754', 'is
   }
   return module.exports;
 });
-System.registerDynamic("npm:jspm-nodelibs-buffer@0.2.0.json", [], false, function() {
+System.registerDynamic("npm:jspm-nodelibs-buffer@0.2.1.json", [], false, function() {
   return {
     "main": "buffer.js",
     "map": {
       "./buffer.js": {
-        "browser": "buffer-browserify"
+        "browser": "buffer"
       }
     }
   };
 });
 
-System.registerDynamic('npm:jspm-nodelibs-buffer@0.2.0/global.js', ['./buffer.js'], true, function ($__require, exports, module) {
+System.registerDynamic('npm:jspm-nodelibs-buffer@0.2.1/global.js', ['./buffer.js'], true, function ($__require, exports, module) {
   var define,
       global = this || self,
       GLOBAL = global;
@@ -58666,7 +58556,7 @@ System.registerDynamic('npm:gl-texture2d@2.1.0/texture.js', ['ndarray', 'ndarray
   }
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/webgl/Texture2D.js", ["gl-texture2d"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/webgl/Texture2D.js", ["gl-texture2d"], function (_export, _context) {
   "use strict";
 
   var createTexture2D;
@@ -58926,7 +58816,7 @@ System.registerDynamic('npm:gl-texture-cube@1.0.1/index.js', [], true, function 
   }
   return module.exports;
 });
-System.register("npm:dlib@0.0.16/webgl/TextureCube.js", ["./Framebuffer.js", "./Texture2D.js", "gl-texture-cube"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/webgl/TextureCube.js", ["./Framebuffer.js", "./Texture2D.js", "gl-texture-cube"], function (_export, _context) {
   "use strict";
 
   var Framebuffer, Texture2D, GLTextureCube;
@@ -58977,7 +58867,7 @@ System.register("npm:dlib@0.0.16/webgl/TextureCube.js", ["./Framebuffer.js", "./
     }
   };
 });
-System.register("npm:dlib@0.0.16/webgl/Shader.js", ["dlib/math/Vector2.js", "dlib/math/Vector3.js", "dlib/math/Vector4.js", "dlib/math/Matrix3.js", "dlib/math/Matrix4.js", "./Texture2D.js", "./TextureCube.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/webgl/Shader.js", ["dlib/math/Vector2.js", "dlib/math/Vector3.js", "dlib/math/Vector4.js", "dlib/math/Matrix3.js", "dlib/math/Matrix4.js", "./Texture2D.js", "./TextureCube.js"], function (_export, _context) {
   "use strict";
 
   var Vector2, Vector3, Vector4, Matrix3, Matrix4, Texture2D, TextureCube;
@@ -58999,36 +58889,29 @@ System.register("npm:dlib@0.0.16/webgl/Shader.js", ["dlib/math/Vector2.js", "dli
     }],
     execute: function () {
       class Shader {
-        static add(shader = "void main() {}", chunks) {
+        static add(string = "void main() {}", chunks) {
           function regExpFromKey(key) {
             let regExpString = key instanceof RegExp ? key.source : key.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&");
             return new RegExp(`(${ regExpString })`);
           }
 
-          for (let [type, chunk] of chunks) {
-            switch (type) {
+          for (let [key, chunk] of chunks) {
+            switch (key) {
               case "start":
-                shader = `${ chunk }\n${ shader }`;
+                string = `${ chunk }\n${ string }`;
                 break;
               case "end":
-                shader = shader.replace(/(}\s*$)/, `\n${ chunk }\n$1`);
+                string = string.replace(/(}\s*$)/, `\n${ chunk }\n$1`);
                 break;
               case "main":
-                shader = shader.replace(/(\bvoid\b +\bmain\b[\s\S]*?{\s*)/, `$1\n${ chunk }\n`);
+                string = string.replace(/(\bvoid\b +\bmain\b[\s\S]*?{\s*)/, `$1\n${ chunk }\n`);
                 break;
-              case "before":
-                shader = shader.replace(regExpFromKey(key), `\n${ chunk }\n$1`);
-                break;
-              case "after":
-                shader = shader.replace(regExpFromKey(key), `$1\n${ chunk }\n`);
-                break;
-              case "replace":
-                shader = shader.replace(regExpFromKey(key), `\n${ chunk }\n`);
-                break;
+              default:
+                string = string.replace(key, chunk);
             }
           }
 
-          return shader;
+          return string;
         }
 
         constructor({ vertexShader = `
@@ -59146,7 +59029,7 @@ System.register("npm:dlib@0.0.16/webgl/Shader.js", ["dlib/math/Vector2.js", "dli
     }
   };
 });
-System.register("npm:dlib@0.0.16/three/THREEShader.js", ["three/src/math/Vector2.js", "three/src/math/Vector3.js", "three/src/math/Vector4.js", "three/src/math/Matrix3.js", "three/src/math/Matrix4.js", "three/src/textures/Texture.js", "three/src/textures/CubeTexture.js", "dlib/webgl/Shader.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/three/THREEShader.js", ["three/src/math/Vector2.js", "three/src/math/Vector3.js", "three/src/math/Vector4.js", "three/src/math/Matrix3.js", "three/src/math/Matrix4.js", "three/src/textures/Texture.js", "three/src/textures/CubeTexture.js", "dlib/webgl/Shader.js"], function (_export, _context) {
   "use strict";
 
   var THREEVector2, THREEVector3, THREEVector4, THREEMatrix3, THREEMatrix4, THREETexture, THREECubeTexture, Shader;
@@ -59211,7 +59094,7 @@ System.register("npm:dlib@0.0.16/three/THREEShader.js", ["three/src/math/Vector2
     }
   };
 });
-System.registerDynamic("npm:dlib@0.0.16.json", [], false, function() {
+System.registerDynamic("npm:dlib@0.0.18.json", [], false, function() {
   return {
     "format": "es6",
     "meta": {
@@ -59222,7 +59105,7 @@ System.registerDynamic("npm:dlib@0.0.16.json", [], false, function() {
   };
 });
 
-System.register("npm:dlib@0.0.16/webgl/shaders/AntialiasGLSL.js", [], function (_export, _context) {
+System.register("npm:dlib@0.0.18/shaders/AntialiasGLSL.js", [], function (_export, _context) {
   "use strict";
 
   return {
@@ -59322,7 +59205,7 @@ System.register("npm:dlib@0.0.16/webgl/shaders/AntialiasGLSL.js", [], function (
     }
   };
 });
-System.register("christmasxp-fireworks/main/Renderer.js", ["three", "three/examples/js/postprocessing/EffectComposer.js", "three/examples/js/postprocessing/ShaderPass.js", "three/examples/js/postprocessing/MaskPass.js", "three/examples/js/postprocessing/RenderPass.js", "three/examples/js/shaders/CopyShader.js", "three/examples/js/postprocessing/BloomPass.js", "three/examples/js/shaders/ConvolutionShader.js", "dlib/three/THREEShader.js", "dlib/webgl/shaders/AntialiasGLSL.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/main/Renderer.js", ["three", "three/examples/js/postprocessing/EffectComposer.js", "three/examples/js/postprocessing/ShaderPass.js", "three/examples/js/postprocessing/MaskPass.js", "three/examples/js/postprocessing/RenderPass.js", "three/examples/js/shaders/CopyShader.js", "three/examples/js/postprocessing/BloomPass.js", "three/examples/js/shaders/ConvolutionShader.js", "dlib/three/THREEShader.js", "dlib/shaders/AntialiasGLSL.js"], function (_export, _context) {
   "use strict";
 
   var WebGLRenderer, THREEShader, AntialiasGLSL;
@@ -59331,65 +59214,66 @@ System.register("christmasxp-fireworks/main/Renderer.js", ["three", "three/examp
       WebGLRenderer = _three.WebGLRenderer;
     }, function (_threeExamplesJsPostprocessingEffectComposerJs) {}, function (_threeExamplesJsPostprocessingShaderPassJs) {}, function (_threeExamplesJsPostprocessingMaskPassJs) {}, function (_threeExamplesJsPostprocessingRenderPassJs) {}, function (_threeExamplesJsShadersCopyShaderJs) {}, function (_threeExamplesJsPostprocessingBloomPassJs) {}, function (_threeExamplesJsShadersConvolutionShaderJs) {}, function (_dlibThreeTHREEShaderJs) {
       THREEShader = _dlibThreeTHREEShaderJs.default;
-    }, function (_dlibWebglShadersAntialiasGLSLJs) {
-      AntialiasGLSL = _dlibWebglShadersAntialiasGLSLJs.default;
+    }, function (_dlibShadersAntialiasGLSLJs) {
+      AntialiasGLSL = _dlibShadersAntialiasGLSLJs.default;
     }],
     execute: function () {
       class Renderer {
         constructor(canvas) {
           this.renderer = new WebGLRenderer({
-            canvas: canvas
+            canvas,
+            alpha: true
           });
-          this.renderer.setClearColor("#0d101e");
-
-          this.effectComposer = new THREE.EffectComposer(this.renderer);
-          this.renderPass = new THREE.RenderPass();
-          this.effectComposer.addPass(this.renderPass);
-          // this.bloomPass = new THREE.BloomPass(8, 10, 1, 1);
-          // this.effectComposer.addPass(this.bloomPass);
-          this.fxaaShaderPass = new THREE.ShaderPass(new THREEShader({
-            vertexShader: `
-        uniform vec2 resolution;
-        varying vec2 vUv;
-        ${ AntialiasGLSL.vertex() }
-        void main() {
-          computeFXAATextureCoordinates(uv, resolution);
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-            fragmentShader: `
-        uniform vec2 resolution;
-        uniform sampler2D tDiffuse;
-        varying vec2 vUv;
-        ${ AntialiasGLSL.fragment() }
-        void main() {
-          gl_FragColor = fxaa(tDiffuse, vUv, resolution);
-        }
-      `
-          }));
-          this.effectComposer.addPass(this.fxaaShaderPass);
-          this.copyShaderPass = new THREE.ShaderPass(THREE.CopyShader);
-          this.effectComposer.addPass(this.copyShaderPass);
-
-          this.effectComposer.passes[this.effectComposer.passes.length - 1].renderToScreen = true;
+          // this.renderer.setClearColor("#0d101e", 0);
+          //
+          // this.effectComposer = new THREE.EffectComposer(this.renderer);
+          // this.renderPass = new THREE.RenderPass();
+          // this.effectComposer.addPass(this.renderPass);
+          // this.fxaaShaderPass = new THREE.ShaderPass(new THREEShader({
+          //   vertexShader: `
+          //     uniform vec2 resolution;
+          //     varying vec2 vUv;
+          //     ${AntialiasGLSL.vertex()}
+          //     void main() {
+          //       computeFXAATextureCoordinates(uv, resolution);
+          //       vUv = uv;
+          //       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          //     }
+          //   `,
+          //   fragmentShader: `
+          //     uniform vec2 resolution;
+          //     uniform sampler2D tDiffuse;
+          //     varying vec2 vUv;
+          //     ${AntialiasGLSL.fragment()}
+          //     void main() {
+          //       gl_FragColor = fxaa(tDiffuse, vUv, resolution);
+          //     }
+          //   `
+          // }));
+          // this.effectComposer.addPass(this.fxaaShaderPass);
+          // this.copyShaderPass = new THREE.ShaderPass(THREE.CopyShader);
+          // this.effectComposer.addPass(this.copyShaderPass);
+          //
+          // this.effectComposer.passes[this.effectComposer.passes.length - 1].renderToScreen = true;
         }
 
         resize(width, height) {
           width *= window.devicePixelRatio;
           height *= window.devicePixelRatio;
           this.renderer.setSize(width, height, false);
-          this.fxaaShaderPass.uniforms.resolution.value.set(width, height);
+          // this.fxaaShaderPass.uniforms.resolution.value.set(width, height);
           // this.bloomPass.renderTargetX.setSize(width, height);
           // this.bloomPass.renderTargetY.setSize(width, height);
-          this.effectComposer.setSize(width, height);
+          // this.effectComposer.setSize(width, height);
         }
 
         render(scene) {
-          this.renderPass.scene = scene;
-          this.renderPass.camera = scene.camera;
+          // this.renderPass.scene = scene;
+          // this.renderPass.camera = scene.camera;
+          //
+          // this.effectComposer.render();
 
-          this.effectComposer.render();
+          this.renderer.render(scene, scene.camera);
         }
       }
 
@@ -59413,19 +59297,17 @@ System.register("christmasxp-fireworks/main/index.js", ["@webcomponents/custom-e
     }],
     execute: function () {
 
-      let template = document.createElement("template");
-      Loader.load("src/main/template.html").then(value => {
-        template.innerHTML = value;
-      });
-
       class Main extends LoopElement {
         constructor() {
-          super();
+          super({
+            background: true
+          });
 
-          let templateClone = document.importNode(template.content, true);
-          this.appendChild(templateClone);
+          this.innerHTML = "<canvas></canvas>";
 
           this.canvas = this.querySelector("canvas");
+          this.canvas.style.width = "100%";
+          this.canvas.style.height = "100%";
 
           this.renderer = new Renderer(this.canvas);
 

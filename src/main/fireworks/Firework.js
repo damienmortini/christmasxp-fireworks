@@ -14,7 +14,7 @@ import {
 import THREEExtendedShaderMaterial from "dlib/three/THREEExtendedShaderMaterial.js";
 import Particle from "dlib/physics/Particle.js";
 
-const PARTICLES_NUMBER = 1000;
+const PARTICLES_NUMBER = 500;
 
 let TEXTURE;
 
@@ -71,7 +71,7 @@ export default class Firework extends Object3D {
       depthWrite: false,
       uniforms: {
         diffuse: new Color(color),
-        size: 25,
+        size: 30,
         opacity: 1,
         map: TEXTURE
       },
@@ -165,7 +165,7 @@ export default class Firework extends Object3D {
 
   update() {
     if(!this.particle.dead) {
-      this.particle.velocity.y -= this.points.material.explosion ? .0001 : .001;
+      this.particle.velocity.y -= this.points.material.explosion ? .0005 : .001;
     }
     this.particle.update();
 
