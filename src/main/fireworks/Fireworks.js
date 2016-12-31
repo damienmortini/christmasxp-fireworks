@@ -4,8 +4,6 @@ import {
   Object3D
 } from "three";
 
-import Ticker from "dlib/utils/Ticker.js";
-
 import Firework from "./Firework.js";
 
 const COLORS = [
@@ -22,15 +20,13 @@ export default class Fireworks extends Object3D {
 
     this.fireworks = [];
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 100; i++) {
       let firework = new Firework({
         color: COLORS[i % COLORS.length]
       });
       this.fireworks.push(firework);
       this.add(firework);
     }
-
-    Ticker.add(this.update.bind(this));
 
     this.reset();
   }
@@ -46,7 +42,7 @@ export default class Fireworks extends Object3D {
       setTimeout(() => {
         firework.reset();
         firework.launch();
-      }, 3000 + 1000 * Math.random());
+      }, 3000 * Math.random());
     }
   }
 

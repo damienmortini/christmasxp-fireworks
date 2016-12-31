@@ -17,6 +17,7 @@ class Main extends LoopElement {
     this.innerHTML = "<canvas></canvas>";
 
     this.canvas = this.querySelector("canvas");
+    this.canvas.style.cursor = "move";
     this.canvas.style.width = "100%";
     this.canvas.style.height = "100%";
 

@@ -10,6 +10,8 @@ import THREETrackballController from "dlib/three/THREETrackballController.js";
 
 import Fireworks from "./fireworks/Fireworks.js";
 
+import Keyboard from "dlib/input/Keyboard.js";
+
 export default class Scene extends THREEScene {
   constructor({canvas}) {
     super();
@@ -21,12 +23,14 @@ export default class Scene extends THREEScene {
       domElement: canvas
     });
 
-    let fireworks = new Fireworks();
-    this.add(fireworks);
+    this.fireworks = new Fireworks();
+    this.add(this.fireworks);
 
-    // canvas.addEventListener("click", () => {
-    //   fireworks.reset();
-    // });
+    Keyboard.addEventListener("keyup", (e) => {
+      if(e.keyCode === Keyboard.SPACE) {
+        this.fireworks.reset();
+      }
+    });
   }
 
   resize(width, height) {
@@ -35,6 +39,8 @@ export default class Scene extends THREEScene {
   }
 
   update() {
-    // this.controls.update();
+    this.controls.update();
+
+    this.fireworks.update();
   }
 }
