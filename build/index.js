@@ -2047,6 +2047,45 @@ System.register("npm:dlib@0.0.18/input/Pointer.js", ["../math/Vector2.js", "../u
     }
   };
 });
+System.register("npm:dlib@0.0.18/utils/Ticker.js", ["./Signal.js"], function (_export, _context) {
+  "use strict";
+
+  var Signal;
+  return {
+    setters: [function (_SignalJs) {
+      Signal = _SignalJs.default;
+    }],
+    execute: function () {
+
+      class Ticker extends Signal {
+        constructor() {
+          super();
+
+          this._updateBinded = this.update.bind(this);
+
+          this._previousTimestamp = 0;
+          this.deltaTime = 0;
+          this.timeScale = 1;
+
+          this.update();
+        }
+
+        update(time) {
+          requestAnimationFrame(this._updateBinded);
+
+          let timestamp = window.performance ? window.performance.now() : Date.now();
+          this.deltaTime = (timestamp - this._previousTimestamp) * .001;
+          this.timeScale = this.deltaTime / .0166666667;
+          this._previousTimestamp = timestamp;
+
+          this.dispatch(time);
+        }
+      }
+
+      _export("default", new Ticker());
+    }
+  };
+});
 System.register("npm:dlib@0.0.18/math/Quaternion.js", ["gl-matrix"], function (_export, _context) {
   "use strict";
 
@@ -2312,67 +2351,6 @@ System.register("npm:dlib@0.0.18/three/THREETrackballController.js", ["three/src
     }
   };
 });
-System.register("npm:dlib@0.0.18/utils/Signal.js", [], function (_export, _context) {
-  "use strict";
-
-  return {
-    setters: [],
-    execute: function () {
-      class Signal extends Set {
-        constructor() {
-          super();
-        }
-
-        dispatch(value) {
-          for (let callback of this) {
-            callback(value);
-          }
-        }
-      }
-
-      _export("default", Signal);
-    }
-  };
-});
-System.register("npm:dlib@0.0.18/utils/Ticker.js", ["./Signal.js"], function (_export, _context) {
-  "use strict";
-
-  var Signal;
-  return {
-    setters: [function (_SignalJs) {
-      Signal = _SignalJs.default;
-    }],
-    execute: function () {
-
-      class Ticker extends Signal {
-        constructor() {
-          super();
-
-          this._updateBinded = this.update.bind(this);
-
-          this._previousTimestamp = 0;
-          this.deltaTime = 0;
-          this.timeScale = 1;
-
-          this.update();
-        }
-
-        update(time) {
-          requestAnimationFrame(this._updateBinded);
-
-          let timestamp = window.performance ? window.performance.now() : Date.now();
-          this.deltaTime = (timestamp - this._previousTimestamp) * .001;
-          this.timeScale = this.deltaTime / .0166666667;
-          this._previousTimestamp = timestamp;
-
-          this.dispatch(time);
-        }
-      }
-
-      _export("default", new Ticker());
-    }
-  };
-});
 System.register("npm:dlib@0.0.18/three/THREEExtendedShaderMaterial.js", ["three", "./THREEShader.js"], function (_export, _context) {
   "use strict";
 
@@ -2553,7 +2531,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
     }],
     execute: function () {
 
-      const PARTICLES_NUMBER = 500;
+      const PARTICLES_NUMBER = 1000;
 
       let TEXTURE;
 
@@ -2690,7 +2668,7 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
 
         update() {
           if (!this.particle.dead) {
-            this.particle.velocity.y -= this.points.material.explosion ? .01 : .001;
+            this.particle.velocity.y -= this.points.material.explosion ? .0001 : .001;
           }
           this.particle.update();
 
@@ -2715,17 +2693,15 @@ System.register("christmasxp-fireworks/main/fireworks/Firework.js", ["three", "d
     }
   };
 });
-System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "dlib/utils/Ticker.js", "./Firework.js"], function (_export, _context) {
+System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "./Firework.js"], function (_export, _context) {
   "use strict";
 
-  var Mesh, MeshNormalMaterial, Object3D, Ticker, Firework;
+  var Mesh, MeshNormalMaterial, Object3D, Firework;
   return {
     setters: [function (_three) {
       Mesh = _three.Mesh;
       MeshNormalMaterial = _three.MeshNormalMaterial;
       Object3D = _three.Object3D;
-    }, function (_dlibUtilsTickerJs) {
-      Ticker = _dlibUtilsTickerJs.default;
     }, function (_FireworkJs) {
       Firework = _FireworkJs.default;
     }],
@@ -2739,15 +2715,13 @@ System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "
 
           this.fireworks = [];
 
-          for (let i = 0; i < 30; i++) {
+          for (let i = 0; i < 100; i++) {
             let firework = new Firework({
               color: COLORS[i % COLORS.length]
             });
             this.fireworks.push(firework);
             this.add(firework);
           }
-
-          Ticker.add(this.update.bind(this));
 
           this.reset();
         }
@@ -2759,7 +2733,7 @@ System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "
             setTimeout(() => {
               firework.reset();
               firework.launch();
-            }, 3000 + 1000 * Math.random());
+            }, 3000 * Math.random());
           }
         }
 
@@ -2774,10 +2748,101 @@ System.register("christmasxp-fireworks/main/fireworks/Fireworks.js", ["three", "
     }
   };
 });
-System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THREETrackballController.js", "./fireworks/Fireworks.js"], function (_export, _context) {
+System.register("npm:dlib@0.0.18/utils/Signal.js", [], function (_export, _context) {
   "use strict";
 
-  var PerspectiveCamera, Mesh, BoxGeometry, MeshNormalMaterial, THREEScene, THREETrackballController, Fireworks;
+  return {
+    setters: [],
+    execute: function () {
+      class Signal extends Set {
+        constructor() {
+          super();
+        }
+
+        dispatch(value) {
+          for (let callback of this) {
+            callback(value);
+          }
+        }
+      }
+
+      _export("default", Signal);
+    }
+  };
+});
+System.register("npm:dlib@0.0.18/input/Keyboard.js", ["../utils/Signal.js"], function (_export, _context) {
+  "use strict";
+
+  var Signal;
+  return {
+    setters: [function (_utilsSignalJs) {
+      Signal = _utilsSignalJs.default;
+    }],
+    execute: function () {
+
+      let keysDown = new Set();
+
+      let onKeyDown = new Signal();
+      let onKeyUp = new Signal();
+
+      class Keyboard {
+        static get LEFT() {
+          return 37;
+        }
+        static get RIGHT() {
+          return 39;
+        }
+        static get UP() {
+          return 38;
+        }
+        static get DOWN() {
+          return 40;
+        }
+        static get SPACE() {
+          return 32;
+        }
+        static get SHIFT() {
+          return 16;
+        }
+        static hasKeyDown(keyCode) {
+          return keysDown.has(keyCode);
+        }
+        static addEventListener(type, listener) {
+          if (type === "keydown") {
+            onKeyDown.add(listener);
+          } else if (type === "keyup") {
+            onKeyUp.add(listener);
+          }
+        }
+        static removeEventListener(type, listener) {
+          if (type === "keydown") {
+            onKeyDown.remove(listener);
+          } else if (type === "keyup") {
+            onKeyUp.remove(listener);
+          }
+        }
+      }
+
+      _export("default", Keyboard);
+
+      window.addEventListener("keydown", e => {
+        if (!Keyboard.hasKeyDown(e.keyCode)) {
+          onKeyDown.dispatch(e);
+        }
+        keysDown.add(e.keyCode);
+      });
+
+      window.addEventListener("keyup", e => {
+        keysDown.delete(e.keyCode);
+        onKeyUp.dispatch(e);
+      });
+    }
+  };
+});
+System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THREETrackballController.js", "./fireworks/Fireworks.js", "dlib/input/Keyboard.js"], function (_export, _context) {
+  "use strict";
+
+  var PerspectiveCamera, Mesh, BoxGeometry, MeshNormalMaterial, THREEScene, THREETrackballController, Fireworks, Keyboard;
   return {
     setters: [function (_three) {
       PerspectiveCamera = _three.PerspectiveCamera;
@@ -2789,6 +2854,8 @@ System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THR
       THREETrackballController = _dlibThreeTHREETrackballControllerJs.default;
     }, function (_fireworksFireworksJs) {
       Fireworks = _fireworksFireworksJs.default;
+    }, function (_dlibInputKeyboardJs) {
+      Keyboard = _dlibInputKeyboardJs.default;
     }],
     execute: function () {
       class Scene extends THREEScene {
@@ -2802,12 +2869,14 @@ System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THR
             domElement: canvas
           });
 
-          let fireworks = new Fireworks();
-          this.add(fireworks);
+          this.fireworks = new Fireworks();
+          this.add(this.fireworks);
 
-          // canvas.addEventListener("click", () => {
-          //   fireworks.reset();
-          // });
+          Keyboard.addEventListener("keyup", e => {
+            if (e.keyCode === Keyboard.SPACE) {
+              this.fireworks.reset();
+            }
+          });
         }
 
         resize(width, height) {
@@ -2816,7 +2885,9 @@ System.register("christmasxp-fireworks/main/Scene.js", ["three", "dlib/three/THR
         }
 
         update() {
-          // this.controls.update();
+          this.controls.update();
+
+          this.fireworks.update();
         }
       }
 
@@ -59306,6 +59377,7 @@ System.register("christmasxp-fireworks/main/index.js", ["@webcomponents/custom-e
           this.innerHTML = "<canvas></canvas>";
 
           this.canvas = this.querySelector("canvas");
+          this.canvas.style.cursor = "move";
           this.canvas.style.width = "100%";
           this.canvas.style.height = "100%";
 
