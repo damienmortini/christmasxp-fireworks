@@ -6,6 +6,8 @@ import {
   Scene as THREEScene
 } from "three";
 
+import Pointer from "dlib/input/Pointer.js";
+
 import THREETrackballController from "dlib/three/THREETrackballController.js";
 
 import Fireworks from "./fireworks/Fireworks.js";
@@ -22,6 +24,8 @@ export default class Scene extends THREEScene {
       distance: 5,
       domElement: canvas
     });
+
+    this.pointer = Pointer.get(canvas);
 
     this.fireworks = new Fireworks();
     this.add(this.fireworks);
@@ -40,6 +44,10 @@ export default class Scene extends THREEScene {
 
   update() {
     this.controls.update();
+
+    if(this.pointer.velocity.size) {
+      this.fireworks.launchFireworkAt(this.pointer.centeredFlippedY.x * .01, this.pointer.centeredFlippedY.y * .01);
+    }
 
     this.fireworks.update();
   }

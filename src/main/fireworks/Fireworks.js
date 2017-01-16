@@ -15,12 +15,12 @@ const COLORS = [
 ];
 
 export default class Fireworks extends Object3D {
-  constructor() {
+  constructor({autoLaunch = true} = {}) {
     super();
 
     this.fireworks = [];
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       let firework = new Firework({
         color: COLORS[i % COLORS.length]
       });
@@ -28,10 +28,18 @@ export default class Fireworks extends Object3D {
       this.add(firework);
     }
 
-    this.reset();
+    if(autoLaunch) {
+      this.launch();
+    }
   }
 
   reset() {
+    for (let firework of this.fireworks) {
+      firework.reset();
+    }
+  }
+
+  launch() {
     for (let firework of this.fireworks) {
       firework.position.set(
         Math.random() * 10 - 5,
@@ -40,10 +48,20 @@ export default class Fireworks extends Object3D {
       );
       firework.reset();
       setTimeout(() => {
-        firework.reset();
         firework.launch();
       }, 3000 * Math.random());
     }
+  }
+
+  launchFireworkAt(x, y) {
+    let firework = this.fireworks[0];
+    this.fireworks.push(this.fireworks.shift());
+    firework.position.set(
+      x,
+      y,
+      0
+    );
+    firework.launch();
   }
 
   update() {
