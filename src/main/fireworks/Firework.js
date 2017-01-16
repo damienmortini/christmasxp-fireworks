@@ -11,7 +11,7 @@ import {
   BufferAttribute
 } from "three";
 
-import THREEExtendedShaderMaterial from "dlib/three/THREEExtendedShaderMaterial.js";
+import THREEShaderMaterial from "dlib/three/THREEShaderMaterial.js";
 import Particle from "dlib/physics/Particle.js";
 
 const PARTICLES_NUMBER = 1000;
@@ -63,7 +63,7 @@ export default class Firework extends Object3D {
     let geometry = new BufferGeometry();
     geometry.addAttribute("position", new BufferAttribute(vertices, 3));
     geometry.addAttribute("vertexOpacity", new BufferAttribute(opacities, 1));
-    this.points = new Points(geometry, new THREEExtendedShaderMaterial({
+    this.points = new Points(geometry, new THREEShaderMaterial({
       type: "points",
       transparent: true,
       blending: AdditiveBlending,
