@@ -27,7 +27,7 @@ export default class Scene extends THREEScene {
 
     this.pointer = Pointer.get(canvas);
 
-    this.fireworks = new Fireworks();
+    this.fireworks = new Fireworks({autoLaunch: false});
     this.add(this.fireworks);
 
     Keyboard.addEventListener("keyup", (e) => {
@@ -46,7 +46,7 @@ export default class Scene extends THREEScene {
     this.controls.update();
 
     if(this.pointer.velocity.size) {
-      this.fireworks.launchFireworkAt(this.pointer.centeredFlippedY.x * .01, this.pointer.centeredFlippedY.y * .01);
+      this.fireworks.launchFireworkAt(this.pointer.centeredFlippedY.x * .0075, this.pointer.centeredFlippedY.y * .008);
     }
 
     this.fireworks.update();

@@ -8,6 +8,8 @@ export default class Renderer extends THREERenderer {
   constructor(options) {
     super(Object.assign({antialias: true}, options));
 
+    this.setClearColor("#0e1430", 1);
+
     if(!this.context.getContextAttributes().antialias && !Environment.mobile) {
       this.filters.push(this.fxaaFilter = new THREEShaderMaterial({
         vertexShader: `
